@@ -57,6 +57,22 @@ pool: "default"
 
 > Lưu ý: **Không cần tổng = 100%**. Plugin sẽ normalize bằng tổng `chance_percent` của các aura hợp lệ trong pool (sau khi lọc conditions).
 
+> ⚠️ Lưu ý quan trọng về `chance_percent`:
+>
+> - `chance_percent` **KHÔNG phải** là tỉ lệ trên 100% tuyệt đối.
+> - Đây là **trọng số theo % tương đối** trong pool sau khi lọc conditions.
+>
+> Ví dụ pool có:
+> - Aura A: `chance_percent: 1`
+> - Aura B: `chance_percent: 0.1`
+>
+> → tổng = 1.1  
+> → Aura A ≈ 90.9%, Aura B ≈ 9.1%
+>
+> Vì vậy:
+> - Không cần (và không nên) cố làm tổng = 100
+> - Aura hiếm chỉ cần **rất nhỏ** (vd `0.00001`)
+
 ### 2.4 `pool`
 
 * Nhóm aura. Roll sẽ chọn theo pool (mặc định `default`).
@@ -211,6 +227,48 @@ equip:
 
 ---
 
+## 6.2) Equip Attributes (buff người chơi khi equip)
+
+Aura có thể **buff trực tiếp Attribute của player** khi equip  
+(và **tự động gỡ sạch khi unequip / reload / logout**).
+
+```yml
+equip:
+  attributes:
+    - attribute: GENERIC_MAX_HEALTH
+      amount: 4
+      operation: ADD_NUMBER
+
+    - attribute: GENERIC_MOVEMENT_SPEED
+      amount: 0.05
+      operation: ADD_SCALAR
+````
+
+### Attribute
+
+Dùng enum của Bukkit:
+[https://hub.spigotmc.org/javadocs/spigot/org/bukkit/attribute/Attribute.html](https://hub.spigotmc.org/javadocs/spigot/org/bukkit/attribute/Attribute.html)
+
+Ví dụ hay dùng:
+
+* `GENERIC_MAX_HEALTH`
+* `GENERIC_ATTACK_DAMAGE`
+* `GENERIC_MOVEMENT_SPEED`
+* `GENERIC_ARMOR`
+* `GENERIC_ATTACK_SPEED`
+
+### Operation
+
+| Operation           | Ý nghĩa         |
+| ------------------- | --------------- |
+| `ADD_NUMBER`        | + thẳng giá trị |
+| `ADD_SCALAR`        | + theo % base   |
+| `MULTIPLY_SCALAR_1` | nhân sau cùng   |
+
+> 💡 Mỗi aura dùng **UUID modifier cố định**, nên không bị cộng dồn lỗi khi reload.
+
+---
+
 ## 7) Particle layer — các field cơ bản
 
 Mỗi layer là 1 “lớp” particle. Bạn có thể chồng nhiều layer để đẹp.
@@ -296,6 +354,25 @@ animation:
 ```
 
 * `0` = đứng yên
+
+### 7.10 Rotate shape (đứng im)
+
+Bạn có thể **xoay hình học của shape** theo trục X / Y / Z.  
+⚠️ Đây **không phải animation**, chỉ là rotate cố định.
+
+```yml
+shape_params:
+  rotate_x: 90
+  rotate_y: 0
+  rotate_z: 0
+````
+
+### Ví dụ thực tế
+
+* `ring` mặc định nằm ngang
+* `rotate_x: 90` → vòng dựng đứng
+* `rotate_y` → xoay quanh người
+* `rotate_z` → nghiêng hình
 
 ---
 
@@ -581,17 +658,31 @@ shape_params:
 
 ---
 
-# 9) Mẹo tối ưu lag (rất quan trọng)
+## 8.13 `item` — Item 3D bay quanh người chơi
 
-1. Giảm `points` trước, rồi mới giảm `amount`.
-2. Đừng spam nhiều layer “dày” cùng lúc.
-3. `interval_ticks` tăng lên sẽ nhẹ hơn rất nhiều.
-4. Với dust (`reddust`), `amount: 1` thường là đủ nếu points nhiều.
-5. Nếu muốn hiệu ứng “đậm”: ưu tiên **2 layer** points vừa phải thay vì 1 layer points cực lớn.
+**Hình:** item (kiếm, feather, relic, v.v.) hiển thị 3D quanh player.
+
+```yml
+shape: item
+shape_params:
+  material: FEATHER
+  scale: tiny
+  x: 1
+  z: 1
+````
+
+### `scale`
+
+| scale    | Hiển thị                    |
+| -------- | --------------------------- |
+| `big`    | Đội đầu – ArmorStand thường |
+| `normal` | Đội đầu – ArmorStand baby   |
+| `small`  | Cầm tay – thường            |
+| `tiny`   | Cầm tay – baby + marker     |
 
 ---
 
-# 10) Template aura hoàn chỉnh (copy nhanh)
+# 10) Template aura hoàn chỉnh
 
 ```yml
 id: angel
