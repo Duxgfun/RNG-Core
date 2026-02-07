@@ -16,11 +16,7 @@ RNG-Core là plugin nền tảng cho hệ RNG (kiểu “Sol’s RNG”) trên s
 
 - Message configurable: prefix, thông báo roll/equip/reload…
 
-
-
-
-
-...
+- ...
 
 ---
 
